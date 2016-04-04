@@ -18,6 +18,8 @@
 
 # NOTE(mrodden): only testing on python27... might work with py3
 
+from __future__ import print_function
+
 import argparse
 import csv
 import json
@@ -94,8 +96,11 @@ def main():
                 data_list.append(result)
             metric_data[metric] = data_list
 
-    with open('/tmp/os_stats.json', 'w') as stat_file:
-        json.dump(metric_data, stat_file)
+    if args.outfile is not None:
+        with open(args.outfile, 'w') as stat_file:
+            json.dump(metric_data, stat_file)
+    else:
+        print(json.dumps(metric_data))
 
 
 def _parse_args():
@@ -104,6 +109,7 @@ def _parse_args():
     p.add_argument('-p', '--passwd')
     p.add_argument('-H', '--host', default='localhost')
     p.add_argument('-D', '--database', default='nova')
+    p.add_argument('-O', '--outfile')
 
     return p.parse_args()
 
