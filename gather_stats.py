@@ -44,6 +44,9 @@ tables = {
     },
     'images_top_10_active': {
         'query': 'select image_ref, count(id) as count from instances where instances.deleted=0 group by image_ref order by count desc LIMIT 10'
+    },
+    'tenants_top_10_active_instances': {
+        'query': 'select project_id, count(id) as count from instances where deleted=0 group by project_id order by count desc LIMIT 10'
     }
 }
 
@@ -88,19 +91,24 @@ def main():
             for result in c.fetchone():
                 metric_data[metric] = result
 
+    table_data = {}
+
     for metric,item_info in tables.iteritems():
         with get_conn(cursorclass=cursors.DictCursor) as c:
             c.execute(item_info['query'])
             data_list = []
             for result in c.fetchall():
                 data_list.append(result)
-            metric_data[metric] = data_list
+            table_data[metric] = data_list
+
+    data = {'metrics': metric_data,
+            'tables': table_data}
 
     if args.outfile is not None:
         with open(args.outfile, 'w') as stat_file:
-            json.dump(metric_data, stat_file)
+            json.dump(data, stat_file)
     else:
-        print(json.dumps(metric_data))
+        print(json.dumps(data))
 
 
 def _parse_args():
