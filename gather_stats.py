@@ -34,6 +34,18 @@ metrics = {
     'compute_node.active.count': 'select count(*) from compute_nodes where deleted=0'
 }
 
+metric_tables = {
+    'service.binary.%s': {
+        'query': 'select services.binary, count(*) as count from services where deleted=0 group by services.binary',
+        'metric_vary_field': 'binary'
+    },
+    'flavors.%s': {
+        'query': 'select instance_types.id,instance_types.name,instance_types.vcpus,instance_types.memory_mb,instance_types.root_gb,instance_types.is_public,(case when instance_types.deleted<>0 then 1 else 0 end) as is_deleted,count(instances.id) as num_active from instances,instance_types where instances.deleted=0 and instances.instance_type_id=instance_types.id group by instances.instance_type_id order by num_active desc',
+        'metric_vary_field': 'id',
+        'fields': ['num_active']
+    }
+}
+
 
 tables = {
     'flavor_info': {
@@ -90,6 +102,22 @@ def main():
             c.execute(query)
             for result in c.fetchone():
                 metric_data[metric] = result
+
+
+    for metric_fmtstr,table_info in metric_tables.iteritems():
+        with get_conn(cursorclass=cursors.DictCursor) as c:
+            c.execute(table_info['query'])
+            for result in c.fetchall():
+                metric_name_base = metric_fmtstr % result[table_info['metric_vary_field']]
+                for key,val in result.iteritems():
+                    if key == table_info['metric_vary_field']:
+                        continue
+                    elif (table_info.get('fields') is not None and
+                          key not in table_info.get('fields', [])):
+                        continue
+                    else:
+                        metric_name = metric_name_base + '.%s' % key
+                        metric_data[metric_name] = val
 
     table_data = {}
 
