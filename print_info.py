@@ -11,7 +11,7 @@ def main():
     headers = map(lambda x: x.upper(), ['metric', 'value'])
 
     print '%s %s %s' % ('=' * 8, 'metrics'.upper(), '=' * 8)
-    print tabulate(data['metrics'].iteritems(),
+    print tabulate(sorted(data['metrics'].iteritems()),
                    headers=headers)
 
     # tables

@@ -40,16 +40,16 @@ metric_tables = {
         'metric_vary_field': 'binary'
     },
     'flavors.%s': {
-        'query': 'select instance_types.id,instance_types.name,instance_types.vcpus,instance_types.memory_mb,instance_types.root_gb,instance_types.is_public,(case when instance_types.deleted<>0 then 1 else 0 end) as is_deleted,count(instances.id) as num_active from instances,instance_types where instances.deleted=0 and instances.instance_type_id=instance_types.id group by instances.instance_type_id order by num_active desc',
+        'query': 'select instance_types.id,instance_types.name,instance_types.vcpus,instance_types.memory_mb,instance_types.root_gb,instance_types.is_public,(case when instance_types.deleted<>0 then 1 else 0 end) as is_deleted,count(instances.id) as \'active.count\' from instances,instance_types where instances.deleted=0 and instances.instance_type_id=instance_types.id group by instances.instance_type_id order by \'active.count\' desc',
         'metric_vary_field': 'id',
-        'fields': ['num_active']
+        'fields': ['active.count']
     }
 }
 
 
 tables = {
     'flavor_info': {
-        'query': 'select instance_types.id,instance_types.name,instance_types.vcpus,instance_types.memory_mb,instance_types.root_gb,instance_types.is_public,(case when instance_types.deleted<>0 then 1 else 0 end) as is_deleted,count(instances.id) as num_active from instances,instance_types where instances.deleted=0 and instances.instance_type_id=instance_types.id group by instances.instance_type_id order by num_active desc'
+        'query': 'select instance_types.id,instance_types.name,instance_types.vcpus,instance_types.memory_mb,instance_types.root_gb,instance_types.is_public,(case when instance_types.deleted<>0 then 1 else 0 end) as is_deleted,count(instances.id) as \'active.count\' from instances,instance_types where instances.deleted=0 and instances.instance_type_id=instance_types.id group by instances.instance_type_id order by \'active.count\' desc'
     },
     'service_counts': {
         'query': 'select services.binary, count(*) as count from services where deleted=0 group by services.binary'
